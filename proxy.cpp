@@ -252,7 +252,11 @@ void handle_client(int client_fd) {
             if (!send_all(client_fd, buf, n)) break;
         }
     }
-
+    sockaddr_in client_addr;
+    socklen_t client_len = sizeof(client_addr);
+    if (getpeername(client_fd, (sockaddr*)&client_addr, &client_len) == 0) {
+        std::cout << "Client Treated : Client ip " << inet_ntoa(client_addr.sin_addr) << " requested " << parsed.method_str << " " << parsed.raw_url << "\n";
+    }
     close(remote_fd);
     close(client_fd);
 }
