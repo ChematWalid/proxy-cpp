@@ -221,6 +221,12 @@ int make_listener(int port) {
 //handle client thread (parse request , connect to remote host , forward request , forward response)
 void handle_client(int client_fd) {
     std::string req;
+    sockaddr_in client_addr;
+    socklen_t client_len = sizeof(client_addr);
+    int peer_name_result = getpeername(client_fd, (sockaddr*)&client_addr, &client_len);
+    if (peer_name_result == 0) {
+        std::cout << "Start Client Treatment : Client ip " << inet_ntoa(client_addr.sin_addr) << "\n";
+    }
     char buf[4096];
     while (req.find("\r\n\r\n") == std::string::npos) {
         ssize_t n = recv(client_fd, buf, sizeof(buf), 0);
@@ -235,6 +241,8 @@ void handle_client(int client_fd) {
         close(client_fd);
         return;
     }
+
+    std::cout << "Client ip " << inet_ntoa(client_addr.sin_addr) << " requested " << parsed.method_str << " " << parsed.raw_url << "\n";
 
     int remote_fd = connect_to_host(parsed.host, parsed.port);
     if (remote_fd < 0) {
@@ -252,9 +260,7 @@ void handle_client(int client_fd) {
             if (!send_all(client_fd, buf, n)) break;
         }
     }
-    sockaddr_in client_addr;
-    socklen_t client_len = sizeof(client_addr);
-    if (getpeername(client_fd, (sockaddr*)&client_addr, &client_len) == 0) {
+    if (peer_name_result == 0) {
         std::cout << "Client Treated : Client ip " << inet_ntoa(client_addr.sin_addr) << " requested " << parsed.method_str << " " << parsed.raw_url << "\n";
     }
     close(remote_fd);
