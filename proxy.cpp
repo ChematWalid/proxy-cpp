@@ -98,7 +98,7 @@ void parse_host_port(const std::string& host_port, std::string& host, int& port)
     }
 }
 
-// Function to parse the target from the request (e.g., "http://example.com/path" or "/path")
+// Function to parse the target from the request (e.g., "http://example.com:port/path" or "/path")
 void parse_target(Request& req) {
     std::string target = req.raw_url;
     std::string host_port;
@@ -182,9 +182,10 @@ int connect_to_host(const std::string& host, int port) {
 
     struct addrinfo* res = nullptr;
     std::string port_str = std::to_string(port);
-    if (getaddrinfo(host.c_str(), port_str.c_str(), &hints, &res) != 0) {
+    if (getaddrinfo(host.c_str(), port_str.c_str(), &hints, &res) != 0) { //google.com, list t3 ip addresses
         return -1;
     }
+    //res = {192.168.1.1, 192.168.1.2, 192.168.1.3 , }
 
     int remote_fd = -1;
     for (struct addrinfo* p = res; p != nullptr; p = p->ai_next) {
